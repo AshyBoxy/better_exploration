@@ -24,7 +24,7 @@
     "entity.strider.StriderEntityMixin",
     "horse_armor.EnchantmentHelperMixin",
     "horse_armor.EnchantmentMixin",
-    "horse_armor.HorseArmorItemMixin",
+    "horse_armor.AnimalArmorItemMixin",
     "horse_armor.ItemsMixin",
     "village.TradeOfferAccessor",
     "village.TradeOffersAccessor",

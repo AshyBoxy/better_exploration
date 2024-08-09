@@ -3,6 +3,7 @@ package dev.hugeblank.jbe.mixin.entity.strider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnLocationTypes;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.entity.passive.StriderEntity;
@@ -20,9 +21,9 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 @Mixin(SpawnRestriction.class)
 public class SpawnRestrictionMixin {
 
-    @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/SpawnRestriction;register(Lnet/minecraft/entity/EntityType;Lnet/minecraft/entity/SpawnRestriction$Location;Lnet/minecraft/world/Heightmap$Type;Lnet/minecraft/entity/SpawnRestriction$SpawnPredicate;)V", ordinal = 0), slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/entity/EntityType;STRIDER:Lnet/minecraft/entity/EntityType;")), method = "<clinit>")
+    @ModifyArgs(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/SpawnRestriction;register(Lnet/minecraft/entity/EntityType;Lnet/minecraft/entity/SpawnLocation;Lnet/minecraft/world/Heightmap$Type;Lnet/minecraft/entity/SpawnRestriction$SpawnPredicate;)V", ordinal = 0), slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/entity/EntityType;STRIDER:Lnet/minecraft/entity/EntityType;")), method = "<clinit>")
     private static void jbe$swapStriderRestriction(Args args) {
-        args.set(1, SpawnRestriction.Location.ON_GROUND);
+        args.set(1, SpawnLocationTypes.ON_GROUND);
         args.set(3, (SpawnRestriction.SpawnPredicate<StriderEntity>) SpawnRestrictionMixin::jbe$canStriderSpawn);
     }
 

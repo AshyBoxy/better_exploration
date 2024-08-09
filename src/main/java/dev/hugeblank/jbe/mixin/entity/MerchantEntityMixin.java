@@ -6,6 +6,7 @@ import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.TradeOffers;
@@ -44,7 +45,8 @@ public abstract class MerchantEntityMixin extends PassiveEntity {
             }
             if (target != null && this.getRandom().nextInt(3) > 0) {
                 arrayList.remove(target);
-                arrayList.add(new TradeOffers.EnchantBookFactory(experience)); // Increase the chance to get a book trade
+                // i'm assuming that using tradeable does the same thing 1.20.6 did
+                arrayList.add(new TradeOffers.EnchantBookFactory(experience, EnchantmentTags.TRADEABLE)); // Increase the chance to get a book trade
             }
         }
     }

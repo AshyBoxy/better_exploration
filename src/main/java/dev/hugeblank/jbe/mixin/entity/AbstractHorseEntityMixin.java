@@ -5,6 +5,7 @@ import dev.hugeblank.jbe.entity.StaminaMount;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -14,6 +15,7 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.world.EntityView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -57,12 +59,16 @@ public abstract class AbstractHorseEntityMixin extends AnimalEntity implements S
 
     @Inject(at = @At("TAIL"), method = "initDataTracker")
     private void jbe$initTrackedStamina(CallbackInfo ci) {
-        if (!this.dataTracker.containsKey(HORSE_STAMINA) || !this.dataTracker.containsKey(HORSE_EXHAUSTED)) {
-            this.dataTracker.startTracking(HORSE_STAMINA, this.getWorld().getGameRules().getInt(MainInit.HORSE_STAMINA));
-            this.dataTracker.startTracking(HORSE_EXHAUSTED, false);
+        // unsure on data trackers
+        // this should probably be swapped for data attachment or cardinal components though
+        if (this.dataTracker.get(HORSE_STAMINA) == null || this.dataTracker.get(HORSE_EXHAUSTED) == null) {
+            this.dataTracker.set(HORSE_STAMINA, this.getWorld().getGameRules().getInt(MainInit.HORSE_STAMINA));
+            this.dataTracker.set(HORSE_EXHAUSTED, false);
         }
     }
 
+    // pretty sure this won't work as intended, when the gamerules are changed
+    // the attributes won't update until after being removed and added again
     @Inject(at = @At("TAIL"), method = "tickMovement")
     private void jbe$tickStamina(CallbackInfo ci) {
         if (!this.getWorld().isClient() && HORSE_MOVEMENT_SPEED != null) {
@@ -75,13 +81,13 @@ public abstract class AbstractHorseEntityMixin extends AnimalEntity implements S
             boolean canRecover = controller == null || !controller.isSprinting();
             if (canRecover && staminaTicks < stamina) {
                 this.dataTracker.set(HORSE_STAMINA, Math.min(staminaTicks + rules.getInt(MainInit.HORSE_STAMINA_REGEN), stamina)); // regenerate stamina
-                if (HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD)) {
-                    HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_SPRINT_MOD.getId());
+                if (HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD_ID)) {
+                    HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_SPRINT_MOD_ID);
                 }
             } else if (!canRecover && staminaTicks > 0 && this.isTame() && this.isSaddled()){
                 this.dataTracker.set(HORSE_STAMINA, staminaTicks-1); // decrement stamina
-                if (!HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD)) {
-                    HORSE_MOVEMENT_SPEED.addTemporaryModifier(MainInit.HORSE_SPRINT_MOD);
+                if (!HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD_ID)) {
+                    HORSE_MOVEMENT_SPEED.addTemporaryModifier(new EntityAttributeModifier(MainInit.HORSE_SPRINT_MOD_ID, MainInit.HORSE_SPRINT_VALUE, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
                 }
             }
             if (staminaTicks == 0 && !exhausted) {
@@ -93,15 +99,15 @@ public abstract class AbstractHorseEntityMixin extends AnimalEntity implements S
                 if (controller != null) {
                     controller.setSprinting(false);
                 }
-                if (!HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_EXHAUSTED_MOD)) {
-                    HORSE_MOVEMENT_SPEED.addTemporaryModifier(MainInit.HORSE_EXHAUSTED_MOD);
+                if (!HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_EXHAUSTED_MOD_ID)) {
+                    HORSE_MOVEMENT_SPEED.addTemporaryModifier(new EntityAttributeModifier(MainInit.HORSE_EXHAUSTED_MOD_ID, MainInit.HORSE_EXHAUSTED_VALUE, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
                 }
-                if (HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD)) {
-                    HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_SPRINT_MOD.getId());
+                if (HORSE_MOVEMENT_SPEED.hasModifier(MainInit.HORSE_SPRINT_MOD_ID)) {
+                    HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_SPRINT_MOD_ID);
                 }
             } else if (staminaTicks == stamina && exhausted) {
                 this.dataTracker.set(HORSE_EXHAUSTED, false);
-                HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_EXHAUSTED_MOD.getId());
+                HORSE_MOVEMENT_SPEED.removeModifier(MainInit.HORSE_EXHAUSTED_MOD_ID);
             }
         }
     }
@@ -114,9 +120,9 @@ public abstract class AbstractHorseEntityMixin extends AnimalEntity implements S
 
     @Inject(at = @At("HEAD"), method = "readCustomDataFromNbt")
     private void jbe$readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (!this.dataTracker.containsKey(HORSE_STAMINA) || !this.dataTracker.containsKey(HORSE_EXHAUSTED)) {
-            this.dataTracker.startTracking(HORSE_STAMINA, nbt.getInt("StaminaTicks"));
-            this.dataTracker.startTracking(HORSE_EXHAUSTED, nbt.getBoolean("Exhausted"));
+        if (this.dataTracker.get(HORSE_STAMINA) == null || this.dataTracker.get(HORSE_EXHAUSTED) == null) {
+            this.dataTracker.set(HORSE_STAMINA, nbt.getInt("StaminaTicks"));
+            this.dataTracker.set(HORSE_EXHAUSTED, nbt.getBoolean("Exhausted"));
         } else {
             this.dataTracker.set(HORSE_STAMINA, nbt.getInt("StaminaTicks"));
             this.dataTracker.set(HORSE_EXHAUSTED, nbt.getBoolean("Exhausted"));

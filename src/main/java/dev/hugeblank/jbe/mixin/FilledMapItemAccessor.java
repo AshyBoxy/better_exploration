@@ -9,10 +9,12 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(FilledMapItem.class)
 public interface FilledMapItemAccessor {
-    @Invoker
-    static void callCreateMapState(
-            ItemStack stack, World world, int x, int z, int scale, boolean showIcons, boolean unlimitedTracking, RegistryKey<World> dimension
-    ) {
-        throw new UnsupportedOperationException();
-    }
+//    @Invoker
+//    static void callCreateMapState(
+//            ItemStack stack, World world, int x, int z, int scale, boolean showIcons, boolean unlimitedTracking, RegistryKey<World> dimension
+//    ) {
+//        throw new UnsupportedOperationException();
+//    }
+
+
 }

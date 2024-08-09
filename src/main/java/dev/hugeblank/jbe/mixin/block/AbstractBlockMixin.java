@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin({AbstractBlock.class, IceBlock.class})
 public class AbstractBlockMixin {
@@ -34,5 +35,4 @@ public class AbstractBlockMixin {
             return Blocks.AIR;
         }
     }
-
 }

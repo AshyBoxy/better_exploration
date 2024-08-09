@@ -1,13 +1,14 @@
 package dev.hugeblank.jbe.network;
 
 import dev.hugeblank.jbe.MainInit;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
-public class JbeStateChangeS2CPacket implements FabricPacket {
-    public static final PacketType<JbeStateChangeS2CPacket> TYPE = PacketType.create(new Identifier(MainInit.ID, "state_change"), JbeStateChangeS2CPacket::new);
+public class JbeStateChangeS2CPacket implements CustomPayload {
+    public static final CustomPayload.Id<JbeStateChangeS2CPacket> PACKET_ID = new CustomPayload.Id<>(MainInit.id("state_change"));
+    public static final PacketCodec<PacketByteBuf, JbeStateChangeS2CPacket> PACKET_CODEC = PacketCodec.of(JbeStateChangeS2CPacket::write, JbeStateChangeS2CPacket::new);
+
     public static final int ALLOW_ICE_BOAT_SPEED = 0;
     public static final int HORSE_STAMINA = 1;
 
@@ -32,14 +33,13 @@ public class JbeStateChangeS2CPacket implements FabricPacket {
         return value;
     }
 
-    @Override
     public void write(PacketByteBuf buf) {
         buf.writeByte(this.reason);
         buf.writeFloat(this.value);
     }
 
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 }

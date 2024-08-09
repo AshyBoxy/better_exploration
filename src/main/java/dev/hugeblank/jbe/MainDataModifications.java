@@ -4,14 +4,13 @@ import com.google.common.collect.ImmutableList;
 import dev.hugeblank.jbe.mixin.ItemEntryAccessor;
 import dev.hugeblank.jbe.mixin.LootPoolBuilderAccessor;
 import net.fabricmc.fabric.api.biome.v1.*;
-import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
-import net.fabricmc.fabric.api.loot.v2.LootTableSource;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableSource;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.Items;
-import net.minecraft.loot.LootManager;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.entry.EmptyEntry;
@@ -22,8 +21,8 @@ import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.loot.provider.number.UniformLootNumberProvider;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -41,7 +40,7 @@ public class MainDataModifications {
     public static final Map<RegistryKey<Biome>, List<Block>> BIOME_CROP_BONUSES;
     private static final Map<Predicate<BiomeSelectionContext>, Map<RegistryKey<PlacedFeature>, RegistryKey<PlacedFeature>>> FEATURES_TO_BIOMES;
     private static final List<String> KEYNAMES;
-    private static final BiomeModification MODIFICATIONS = BiomeModifications.create(new Identifier(MainInit.ID, "biome_modifications"));
+    private static final BiomeModification MODIFICATIONS = BiomeModifications.create(MainInit.id("biome_modifications"));
 
     public static void init() {}
 
@@ -53,14 +52,14 @@ public class MainDataModifications {
         );
 
         FEATURES_TO_BIOMES = Map.of(
-                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, new Identifier("is_ocean"))), keysFromPrefix("copper"),
-                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, new Identifier("is_mountain"))), keysFromPrefix("iron"),
+                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("is_ocean"))), keysFromPrefix("copper"),
+                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("is_mountain"))), keysFromPrefix("iron"),
                 BiomeSelectors.includeByKey(BiomeKeys.BIRCH_FOREST, BiomeKeys.OLD_GROWTH_BIRCH_FOREST), keysFromPrefix("iron"),
-                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, new Identifier("is_taiga"))), keysFromPrefix("lapis"),
+                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("is_taiga"))), keysFromPrefix("lapis"),
                 BiomeSelectors.includeByKey(BiomeKeys.DARK_FOREST, BiomeKeys.LUSH_CAVES), keysFromPrefix("lapis"),
-                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, new Identifier("is_jungle"))), keysFromPrefix("diamond"),
+                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("is_jungle"))), keysFromPrefix("diamond"),
                 BiomeSelectors.includeByKey(BiomeKeys.SWAMP, BiomeKeys.MANGROVE_SWAMP), keysFromPrefix("redstone"),
-                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, new Identifier("is_savanna"))), keysFromPrefix("coal"),
+                BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.ofVanilla("is_savanna"))), keysFromPrefix("coal"),
                 BiomeSelectors.includeByKey(BiomeKeys.DESERT), keysFromPrefix("coal")
         );
 
@@ -93,15 +92,15 @@ public class MainDataModifications {
                 (context) -> context.getSpawnSettings().setCreatureSpawnProbability(0.15f)
         );
 
-        LootTableEvents.MODIFY.register((ResourceManager resourceManager, LootManager lootManager, Identifier id, LootTable.Builder tableBuilder, LootTableSource source) -> {
+        LootTableEvents.MODIFY.register((RegistryKey<LootTable> key, LootTable.Builder tableBuilder, LootTableSource source, RegistryWrapper.WrapperLookup registries) -> {
             if (source.isBuiltin()) {
-                if (id.equals(new Identifier("chests/ancient_city"))) {
+                if (key.getValue().equals(Identifier.ofVanilla("chests/ancient_city"))) {
                     tableBuilder.modifyPools((pool) -> {
                         boolean replace = false; // now this is just stupid...
                         ImmutableList.Builder<LootPoolEntry> builder = ImmutableList.builder();
                         for (LootPoolEntry entry : ((LootPoolBuilderAccessor) pool).getEntries().build()) {
                             if (entry instanceof ItemEntry && ((ItemEntryAccessor) entry).getItem().equals(Items.DIAMOND_HOE.getRegistryEntry())) {
-                                EnchantWithLevelsLootFunction.Builder enchantLootFunctionBuilder = EnchantWithLevelsLootFunction.builder(UniformLootNumberProvider.create(30, 50)).allowTreasureEnchantments();
+                                EnchantWithLevelsLootFunction.Builder enchantLootFunctionBuilder = EnchantWithLevelsLootFunction.builder(registries, UniformLootNumberProvider.create(30, 50));
                                 builder.add(ItemEntry.builder(Items.DIAMOND_HELMET).apply(enchantLootFunctionBuilder).build(),
                                         ItemEntry.builder(Items.DIAMOND_CHESTPLATE).apply(enchantLootFunctionBuilder).build(),
                                         ItemEntry.builder(Items.DIAMOND_LEGGINGS).apply(enchantLootFunctionBuilder).build(),
@@ -113,7 +112,7 @@ public class MainDataModifications {
                                         ItemEntry.builder(Items.DIAMOND_HOE).apply(enchantLootFunctionBuilder).build());
                                 replace = true;
                             } else if (entry instanceof ItemEntry && ((ItemEntryAccessor) entry).getItem().equals(Items.DIAMOND_HORSE_ARMOR.getRegistryEntry())) {
-                                EnchantWithLevelsLootFunction.Builder enchantLootFunctionBuilder = EnchantWithLevelsLootFunction.builder(UniformLootNumberProvider.create(0, 50)).allowTreasureEnchantments();
+                                EnchantWithLevelsLootFunction.Builder enchantLootFunctionBuilder = EnchantWithLevelsLootFunction.builder(registries, UniformLootNumberProvider.create(0, 50));
                                 builder.add(ItemEntry.builder(Items.DIAMOND_HORSE_ARMOR).apply(enchantLootFunctionBuilder).build());
                                 replace = true;
                             } else {
@@ -124,7 +123,7 @@ public class MainDataModifications {
                             ((LootPoolBuilderAccessor) pool).setEntries(builder);
                         }
                     });
-                } else if (id.equals(new Identifier("chests/woodland_mansion"))) {
+                } else if (key.getValue().equals(Identifier.ofVanilla("chests/woodland_mansion"))) {
                     tableBuilder.pool(
                             LootPool.builder()
                                     .rolls(ConstantLootNumberProvider.create(1))
@@ -188,7 +187,7 @@ public class MainDataModifications {
         ).map(
                 (str) -> "ore_" + str
         ).map(
-                Identifier::new
+                Identifier::ofVanilla
         ).map(
                 (identifier) -> RegistryKey.of(RegistryKeys.PLACED_FEATURE, identifier)
         ).iterator();
@@ -198,7 +197,7 @@ public class MainDataModifications {
         ).map(
                 (str) -> "ore_" + str + "_bonus"
         ).map(
-                (str) -> new Identifier(MainInit.ID, str)
+                MainInit::id
         ).map(
                 (identifier) -> RegistryKey.of(RegistryKeys.PLACED_FEATURE, identifier)
         ).iterator();

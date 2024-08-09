@@ -9,7 +9,7 @@
       "item": "minecraft:redstone"
     },
     "X": {
-      "item": "minecraft:gold_ingot"
+      "item": "minecraft:copper_ingot"
     }
   },
   "pattern": [
@@ -19,7 +19,7 @@
   ],
   "result": {
     "count": 6,
-    "item": "jbe:powered_rail"
+    "id": "minecraft:powered_rail"
   },
   "show_notification": true
 }

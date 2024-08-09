@@ -17,15 +17,16 @@ import java.util.List;
 @Mixin(EnchantmentHelper.class)
 public class EnchantmentHelperMixin {
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/Enchantment;isTreasure()Z"), method = "getPossibleEntries", locals = LocalCapture.CAPTURE_FAILHARD)
-    private static void jbe$coercePossibleEntries(int power, ItemStack stack, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir, List<EnchantmentLevelEntry> list, Item item, boolean bl, Iterator var6, Enchantment enchantment) {
-        if (!enchantment.target.isAcceptableItem(item) && (!enchantment.isTreasure() || treasureAllowed) && enchantment.isAvailableForRandomSelection() && enchantment.isAcceptableItem(stack)) {
-            for(int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
-                if (power >= enchantment.getMinPower(i) && power <= enchantment.getMaxPower(i)) {
-                    list.add(new EnchantmentLevelEntry(enchantment, i));
-                    break;
-                }
-            }
-        }
-    }
+    // i can't read this
+//    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/Enchantment;isTreasure()Z"), method = "getPossibleEntries", locals = LocalCapture.CAPTURE_FAILHARD)
+//    private static void jbe$coercePossibleEntries(int power, ItemStack stack, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir, List<EnchantmentLevelEntry> list, Item item, boolean bl, Iterator var6, Enchantment enchantment) {
+//        if (!enchantment.target.isAcceptableItem(item) && (!enchantment.isTreasure() || treasureAllowed) && enchantment.isAvailableForRandomSelection() && enchantment.isAcceptableItem(stack)) {
+//            for(int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
+//                if (power >= enchantment.getMinPower(i) && power <= enchantment.getMaxPower(i)) {
+//                    list.add(new EnchantmentLevelEntry(enchantment, i));
+//                    break;
+//                }
+//            }
+//        }
+//    }
 }

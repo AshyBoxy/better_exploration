@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.JumpingMount;
 import net.minecraft.entity.passive.AbstractHorseEntity;
@@ -21,20 +22,18 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
     @Unique
-    private static final Identifier STAMINA_BAR_BACKGROUND_TEXTURE = new Identifier(MainInit.ID, "hud/stamina_bar_background");
+    private static final Identifier STAMINA_BAR_BACKGROUND_TEXTURE = MainInit.id("hud/stamina_bar_background");
     @Unique
-    private static final Identifier STAMINA_BAR_PROGRESS_TEXTURE = new Identifier(MainInit.ID, "hud/stamina_bar_progress");
+    private static final Identifier STAMINA_BAR_PROGRESS_TEXTURE = MainInit.id("hud/stamina_bar_progress");
 
     @Shadow @Final private MinecraftClient client;
-
-    @Shadow private int scaledHeight;
 
     @Unique
     public void jbe$renderMountStaminaBar(StaminaMount mount, DrawContext context, int x) {
         this.client.getProfiler().push("staminaBar");
         float f = (float) mount.jbe$getStamina()/((AbstractHorseEntity)mount).getWorld().getGameRules().getInt(MainInit.HORSE_STAMINA);
         int j = (int)(f * 183.0F);
-        int k = this.scaledHeight - 32 + 3;
+        int k = context.getScaledWindowHeight() - 32 + 3;
         context.drawGuiTexture(STAMINA_BAR_BACKGROUND_TEXTURE, x, k, 182, 5);
         if (j > 0) {
             context.drawGuiTexture(STAMINA_BAR_PROGRESS_TEXTURE, 182, 5, 0, 0, x, k, j, 5);
@@ -51,8 +50,9 @@ public class InGameHudMixin {
         }
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMountJumpBar(Lnet/minecraft/entity/JumpingMount;Lnet/minecraft/client/gui/DrawContext;I)V"), method = "render", locals = LocalCapture.CAPTURE_FAILHARD)
-    private void jbe$addStaminaBar(DrawContext context, float tickDelta, CallbackInfo ci, Window window, TextRenderer textRenderer, float f, float g, int i, JumpingMount jumpingMount) {
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMountJumpBar" +
+            "(Lnet/minecraft/entity/JumpingMount;Lnet/minecraft/client/gui/DrawContext;I)V"), method = "renderMainHud", locals = LocalCapture.CAPTURE_FAILHARD)
+    private void jbe$addStaminaBar(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci, int i, JumpingMount jumpingMount) {
         jbe$renderMountStaminaBar((StaminaMount) jumpingMount, context, i);
     }
 }
